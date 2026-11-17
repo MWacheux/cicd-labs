@@ -7,7 +7,7 @@ from decimal import Decimal
 
 import pytest
 
-from minishop.pricing import line_total, money, quote, shipping_cost, coupon_discount
+from minishop.pricing import coupon_discount, line_total, money, quote, shipping_cost
 
 pytestmark = pytest.mark.unit
 
@@ -49,7 +49,7 @@ def test_coupons_exclus():
 
 def test_coupons_inconnus():
     with pytest.raises(ValueError):
-        coupon_discount(Decimal("20.00"), "EXAMPLE") 
+        coupon_discount(Decimal("20.00"), "EXAMPLE")
         coupon_discount(Decimal("30.00"), "EXAMPLE")
 
 def test_coupon_freeship_inconnu():
