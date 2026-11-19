@@ -49,6 +49,27 @@ Fonctionnalité: Calcul du total d'un panier
     Et je calcule le total
     Alors la remise vaut 0.00
 
+  Scénario: Coupon FIXED5 au seuil d'éligibilité
+    Étant donné un panier avec 13 "sticker"
+    Quand j'applique le coupon "FIXED5"
+    Et je calcule le total
+    Alors le sous-total vaut 30.26
+    Et la remise vaut 5.00
+    Et le total vaut 30.16
+
+  Scénario: Remise volume et coupon WELCOME10
+    Étant donné un panier avec 10 "sticker"
+    Quand j'applique le coupon "WELCOME10"
+    Et je calcule le total
+    Alors le sous-total vaut 23.28
+    Et la remise vaut 2.33
+    Et le total vaut 25.85
+
+  Scénario: Quantité nulle interdite
+    Étant donné un panier avec 0 "mug"
+    Quand je calcule le total
+    Alors une erreur "Quantité hors limites" est levée
+
   Scénario: Coupon de livraison offerte
     Étant donné un panier avec 1 "sticker"
     Quand j'applique le coupon "FREESHIP"
