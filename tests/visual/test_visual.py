@@ -27,7 +27,9 @@ BASE, CURRENT, DIFF = HERE / "baselines", HERE / "current", HERE / "diff"
 def check(page: Page, name: str, **kwargs):
     CURRENT.mkdir(exist_ok=True)
     current = CURRENT / f"{name}.png"
-    page.screenshot(path=str(current), **kwargs)
+    masks = list(kwargs.pop("mask", []))
+    masks.append(page.get_by_test_id("current-time"))
+    page.screenshot(path=str(current), mask=masks, **kwargs)
     baseline = BASE / f"{name}.png"
     if not baseline.exists() or os.getenv("UPDATE_BASELINES") == "1":
         BASE.mkdir(exist_ok=True)
