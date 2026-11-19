@@ -14,7 +14,7 @@ jobs:
         uses: astral-sh/ruff-action@v3
         with:
           args: "check . --output-format=github"
-  test:
+  tests:
     needs: lint
     runs-on: ubuntu-latest
     strategy:
@@ -30,3 +30,20 @@ jobs:
           cache-dependency-path: 'requirements-dev.txt'
       - run: pip install -r requirements-dev.txt pytest-xdist
       - run: pytest -n auto -m "unit or api"
+      - run: playwright install --with-deps chromium
+      - name: Exécuter les tests visuels
+        run: |
+          uvicorn minishop.api:app --host 127.0.0.1 --port 8000 &
+          APP_PID=$!
+          trap 'kill $APP_PID' EXIT
+          timeout 60 bash -c 'until curl -sf http://127.0.0.1:8000/; do sleep 1; done'
+          pytest -m visual
+      - name: Publier les images de debug visuel
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-artifacts
+          path: |
+            tests/visual/current
+            tests/visual/diff
+          if-no-files-found: ignore
