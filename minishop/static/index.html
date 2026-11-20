@@ -10,6 +10,7 @@
   <header>
     <h1 data-testid="title">MiniShop</h1>
     <p class="tagline">La boutique des pipelines verts</p>
+    <p class="clock">Heure : <span id="current-time" data-testid="current-time"></span></p>
   </header>
 
   <main>
@@ -114,8 +115,15 @@
       conf.hidden = false;
     }
 
+    function renderCurrentTime() {
+      const now = new Date();
+      document.getElementById('current-time').textContent = now.toLocaleTimeString('fr-FR');
+    }
+
     document.getElementById('quote-btn').addEventListener('click', computeQuote);
     document.getElementById('order-btn').addEventListener('click', order);
+    renderCurrentTime();
+    setInterval(renderCurrentTime, 1000);
     loadProducts();
   </script>
 </body>

@@ -9,13 +9,47 @@ import re
 import pytest
 from playwright.sync_api import Page, expect
 
-pytestmark = pytest.mark.e2e
+from tests.e2e.shop_page import ShopPage
 
-
-def test_page_accueil(page: Page, app_url):
+@pytest.fixture
+def shop(page: Page, app_url) -> ShopPage:
     page.goto(app_url)
-    expect(page).to_have_title(re.compile("MiniShop"))
-    expect(page.get_by_test_id("products").locator("li")).to_have_count(5)
+    return ShopPage(page)
 
 
-# TODO Atelier 8 : ajouter 2 mugs, appliquer WELCOME10, vérifier le total, commander.
+def test_page_accueil(shop: ShopPage):
+    expect(shop.page).to_have_title(re.compile("MiniShop"))
+    expect(shop.page.get_by_test_id("products").locator("li")).to_have_count(5)
+
+
+def test_parcours_commande_confirmee(shop: ShopPage):
+
+    shop.add("mug").add("mug")
+    shop.apply_coupon("WELCOME10")
+
+    expect(shop.page.get_by_test_id("order-btn")).to_be_enabled()
+    assert shop.total() != ""
+
+    confirmation = shop.order()
+    expect(confirmation).to_contain_text("Commande")
+
+
+def test_parcours_achat_coupon_invalide(shop: ShopPage):
+
+    shop.add("mug").add("mug")
+    shop.apply_coupon("WELCOM1")
+
+    expect(shop.page.get_by_role("alert")).to_be_visible()
+
+def test_commander_desactivee_si_panier_vide(shop: ShopPage):
+    order_button = shop.page.get_by_test_id("order-btn")
+    expect(shop.page.get_by_test_id("cart")).to_contain_text("Votre panier est vide")
+    expect(order_button).to_be_disabled()
+
+    shop.add("mug")
+    expect(order_button).to_be_enabled()
+
+
+
+
+

@@ -35,10 +35,6 @@ class VisualResult:
         return not self.size_mismatch and self.diff_ratio <= max_diff and self.ssim >= min_ssim
 
 
-def _gray(a: np.ndarray) -> np.ndarray:
-    return a[..., 0] * 0.299 + a[..., 1] * 0.587 + a[..., 2] * 0.114
-
-
 def ssim(x: np.ndarray, y: np.ndarray, win: int = 8) -> float:
     """SSIM moyen sur fenêtres non chevauchantes (implémentation pédagogique)."""
     c1, c2 = (0.01 * 255) ** 2, (0.03 * 255) ** 2
@@ -52,6 +48,11 @@ def ssim(x: np.ndarray, y: np.ndarray, win: int = 8) -> float:
     return float(s.mean())
 
 
+def ssim_rgb(a: np.ndarray, b: np.ndarray, win: int = 8) -> float:
+    """SSIM moyen sur les 3 canaux RGB (détecte les changements de couleur)."""
+    return float(np.mean([ssim(a[..., i], b[..., i], win=win) for i in range(3)]))
+
+
 def compare(baseline: Path, current: Path, diff_out: Path | None = None, tolerance: int = 16) -> VisualResult:
     a = np.asarray(Image.open(baseline).convert("RGB"), dtype=np.float64)
     b = np.asarray(Image.open(current).convert("RGB"), dtype=np.float64)
@@ -63,7 +64,7 @@ def compare(baseline: Path, current: Path, diff_out: Path | None = None, toleran
         out[changed] = [255, 0, 255]
         diff_out.parent.mkdir(parents=True, exist_ok=True)
         Image.fromarray(out).save(diff_out)
-    return VisualResult(float(changed.mean()), ssim(_gray(a), _gray(b)), False)
+    return VisualResult(float(changed.mean()), ssim_rgb(a, b), False)
 
 
 def main() -> int:
