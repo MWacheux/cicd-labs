@@ -97,3 +97,19 @@ jobs:
           name: visual-baselines
           path: tests/visual/baselines
           if-no-files-found: error
+  charge:
+    if: ${{ !(github.event_name == 'workflow_dispatch' && inputs.update_baselines) }}
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+          cache-dependency-path: "requirements-dev.txt"
+      - run: pip install -r requirements-dev.txt locust
+      - name: Exécuter les tests de charge
+        run: |
+          locust -f tests/perf/locustfile.py --host http://localhost:8000 --headless -u 50 -r 10 -t 1m \
+          --csv reports/perf --html reports/perf.html ; echo "code retour : $?"
